@@ -7,8 +7,8 @@
 //  See LICENSE for details.
 //
 
-#import <XCTest/XCTest.h>
 #import "ReactiveCryptor.h"
+#import "RCRTestDefinitions.h"
 
 @interface RNDecryptor_ReactiveCryptorTests : XCTestCase
 

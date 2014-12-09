@@ -7,8 +7,8 @@
 //  See LICENSE for details.
 //
 
-#import <XCTest/XCTest.h>
 #import "ReactiveCouchbaseLite.h"
+#import "RCRTestDefinitions.h"
 
 @interface NSOutputStream_ReactiveCryptorTests : XCTestCase
 
