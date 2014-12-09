@@ -7,7 +7,7 @@
 //  See LICENSE for details.
 //
 
-#import "ReactiveCouchbaseLite.h"
+#import "ReactiveCryptor.h"
 #import "RCRTestDefinitions.h"
 
 @interface NSInputStream_ReactiveCryptorTests : XCTestCase {
@@ -20,7 +20,7 @@
 
 - (void)setUp {
 	[super setUp];
-    inputStream = [[NSInputStream alloc] initWithFileAtPath:@"/mach_kernel"];
+    inputStream = [[NSInputStream alloc] initWithData:[@"Data" dataUsingEncoding:NSUTF8StringEncoding]];
     [inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     [inputStream open];
 }
@@ -33,9 +33,10 @@
 }
 
 - (void)test {
-	/*
-		Run a test here.
-	*/
+	[self rcr_expectNext:^(NSData *next) {
+        XCTAssertNotNil(next);
+        XCTAssertTrue(next.length == 4);
+    } signal:[inputStream rcr_readWithBufferSize:4] timeout:5.0 description:@"read data successfully"];
 }
 
 @end
