@@ -22,4 +22,15 @@
 
 - (RACSignal *)rcr_readWithBufferSize:(NSUInteger)bufferSize;
 
+/**
+ Reads some amount of data into the buffer whenever a next is received from the sample signal.
+ 
+ @param sampleSignal A signal controlling the reading.  Each `next` should be an NSNumber<NSUInteger> specifying the
+ amount of data to read.
+ @return A signal that returns an amount of data, completes when the read finishes, and returns an error if one 
+ occurred.
+ */
+
+- (RACSignal *)rcr_readWithSampleSignal:(RACSignal *)sampleSignal;
+
 @end

@@ -30,4 +30,17 @@
     return [result setNameWithFormat:@"[%@] -rcr_readWithBufferSize: %@", result.name, @(bufferSize)];
 }
 
+- (RACSignal *)rcr_readWithSampleSignal:(RACSignal *)sampleSignal {
+    @weakify(self)
+    RACSignal *result = [[sampleSignal
+    flattenMap:^RACSignal *(NSNumber *bufferSize) {
+        @strongify(self)
+        return [self rcr_readWithBufferSize:bufferSize.unsignedIntegerValue];
+    }]
+    takeUntilBlock:^BOOL (NSData *next) {
+        return !next.length;
+    }];
+    return [result setNameWithFormat:@"[%@] -rcr_readWithSampleSignal: %@", result.name, sampleSignal];
+}
+
 @end
