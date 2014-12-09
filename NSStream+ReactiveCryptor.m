@@ -60,4 +60,15 @@
     return [result setNameWithFormat:@"[%@] -rcr_openSignal", result.name];
 }
 
+- (RACSignal *)rcr_openUntil:(RACSignal *)closeSignal {
+    @weakify(self)
+    [self open];
+    RACSignal *result = [closeSignal
+    finally:^{
+        @strongify(self)
+        [self close];
+    }];
+    return [result setNameWithFormat:@"[%@] -rcr_openUntil: %@", result.name, closeSignal];
+}
+
 @end

@@ -30,4 +30,12 @@
 
 - (RACSignal *)rcr_openSignal;
 
+/**
+ Opens the stream and closes it when the specified signal completes or errors.
+ 
+ @return A signal that opens and closes the receiver.
+ */
+
+- (RACSignal *)rcr_openUntil:(RACSignal *)closeSignal;
+
 @end
