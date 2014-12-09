@@ -10,7 +10,9 @@
 #import "ReactiveCouchbaseLite.h"
 #import "RCRTestDefinitions.h"
 
-@interface NSInputStream_ReactiveCryptorTests : XCTestCase
+@interface NSInputStream_ReactiveCryptorTests : XCTestCase {
+    NSInputStream *inputStream;
+}
 
 @end
 
@@ -18,9 +20,15 @@
 
 - (void)setUp {
 	[super setUp];
+    inputStream = [[NSInputStream alloc] initWithFileAtPath:@"/mach_kernel"];
+    [inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    [inputStream open];
 }
 
 - (void)tearDown {
+    [inputStream close];
+    [inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    inputStream = nil;
 	[super tearDown];
 }
 
