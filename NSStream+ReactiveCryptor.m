@@ -12,6 +12,18 @@
 
 @implementation NSStream (ReactiveCryptor)
 
++ (void)rcr_createStreamPairWithBufferSize:(NSUInteger)bufferSize inputStream:(NSInputStream **)inputStream outputStream:(NSOutputStream **)outputStream {
+    CFReadStreamRef localInputStream;
+    CFWriteStreamRef localOutputStream;
+    CFStreamCreateBoundPair(kCFAllocatorDefault, &localInputStream, &localOutputStream, bufferSize);
+    if (inputStream) {
+        *inputStream = (NSInputStream *)CFBridgingRelease(localInputStream);
+    }
+    if (outputStream) {
+        *outputStream = (NSOutputStream *)CFBridgingRelease(localOutputStream);
+    }
+}
+
 - (RACSignal *)rcr_openSignal {
     @weakify(self)
     RACSignal *result = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
