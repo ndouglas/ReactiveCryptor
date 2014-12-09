@@ -47,4 +47,15 @@
 
 - (void)rcr_expectError:(void (^)(NSError *error))errorHandler signal:(RACSignal *)signal timeout:(NSTimeInterval)timeout description:(NSString *)description;
 
+/**
+ Tests that the specified condition succeeded before the timeout.
+ 
+ @param block A block that must evaluate to YES before the timeout.
+ @param timeout The timeout.
+ @param interval The interval between tests.
+ @param description A description of this test.
+ */
+
+- (void)rcr_expectCondition:(BOOL (^)(void))block beforeTimeout:(NSTimeInterval)timeout interval:(NSTimeInterval)interval description:(NSString *)description;
+
 @end

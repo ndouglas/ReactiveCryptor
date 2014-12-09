@@ -99,4 +99,24 @@
     } timeout:timeout];
 }
 
+- (void)rcr_expectCondition:(BOOL (^)(void))block beforeTimeout:(NSTimeInterval)timeout interval:(NSTimeInterval)interval description:(NSString *)description {
+    XCTestExpectation *expectation = [self expectationWithDescription:description];
+    BOOL passed = block();
+    NSDate *timeoutDate = [NSDate dateWithTimeIntervalSinceNow:timeout];
+    if (!passed) {
+        while (!(passed = block()) && [timeoutDate timeIntervalSinceNow] >0) {
+            [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:interval]];
+        }
+    }
+    if (passed) {
+        [expectation fulfill];
+    }
+    [self waitForExpectationsWithTimeout:timeout handler:^(NSError *error) {
+        if (error) {
+            XCTFail(@"Expectation '%@' failed with error: %@", expectation.description, error);
+        }
+    }];
+}
+
+
 @end
