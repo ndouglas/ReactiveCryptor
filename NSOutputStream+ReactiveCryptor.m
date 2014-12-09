@@ -48,8 +48,7 @@
             [subject sendNext:@(bufferSize)];
         }];
     }];
-    return [result setNameWithFormat:@"[%@] -rcr_processInputStream: %@ bufferSize: %@", result.name, inputStream, @(bufferSize)];
-    
+    return [result setNameWithFormat:@"[%@] -rcr_processInputStream: %@ bufferSize: %@", result.name, inputStream, @(bufferSize)];    
 }
 
 @end
