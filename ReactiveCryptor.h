@@ -8,3 +8,4 @@
 //
 
 #import "RCRDefinitions.h"
+#import "RNDecryptor+ReactiveCryptor.h"
