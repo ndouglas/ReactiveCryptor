@@ -27,20 +27,28 @@
     testData = [testString dataUsingEncoding:NSUTF8StringEncoding];
     inputStream = [[NSInputStream alloc] initWithData:testData];
     [inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-    [inputStream open];
+    outputStream = [[NSOutputStream alloc] initToMemory];
+    [outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    [outputStream open];
 }
 
 - (void)tearDown {
     [inputStream close];
     [inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     inputStream = nil;
+    [outputStream close];
+    [outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    outputStream = nil;
 	[super tearDown];
 }
 
-- (void)test {
-	/*
-		Run a test here.
-	*/
+- (NSData *)dataInOutputStream:(NSOutputStream *)anOutputStream {
+    return [anOutputStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
+}
+
+- (void)trivalTest {
+	[outputStream write:testData.bytes maxLength:testData.length];
+    XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
 }
 
 @end
