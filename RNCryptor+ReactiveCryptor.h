@@ -1,5 +1,5 @@
 //
-//  ReactiveCryptor.h
+//  RNCryptor+ReactiveCryptor.h
 //  ReactiveCryptor
 //
 //  Created by Nathan Douglas on 12/8/14.
@@ -8,5 +8,8 @@
 //
 
 #import "RCRDefinitions.h"
-#import "RNDecryptor+ReactiveCryptor.h"
-#import "RNEncryptor+ReactiveCryptor.h"
+#import "RNCryptor.h"
+
+@interface RNCryptor (ReactiveCryptor)
+
+@end
