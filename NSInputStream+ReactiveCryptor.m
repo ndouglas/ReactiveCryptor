@@ -16,7 +16,7 @@
     @weakify(self)
     RACSignal *result = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
         @strongify(self)
-        NSMutableData *buffer = [NSMutableData dataWithCapacity:bufferSize];
+        NSMutableData *buffer = [NSMutableData dataWithLength:bufferSize];
         NSInteger bytesRead = [self read:[buffer mutableBytes] maxLength:bufferSize];
         if (bytesRead < 0) {
             [subscriber sendError:[self streamError]];
