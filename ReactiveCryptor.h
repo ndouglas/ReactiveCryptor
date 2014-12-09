@@ -8,6 +8,7 @@
 //
 
 #import "RCRDefinitions.h"
+#import "NSStream+ReactiveCryptor.h"
 #import "RNCryptor+ReactiveCryptor.h"
 #import "RNDecryptor+ReactiveCryptor.h"
 #import "RNEncryptor+ReactiveCryptor.h"
