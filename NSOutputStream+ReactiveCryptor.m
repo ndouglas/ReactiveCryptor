@@ -10,7 +10,6 @@
 #import "NSOutputStream+ReactiveCryptor.h"
 #import "ReactiveCryptor.h"
 
-
 @implementation NSOutputStream (ReactiveCryptor)
 
 - (RACSignal *)rcr_writeOnce:(NSData *)data {
@@ -38,6 +37,19 @@
         return [self rcr_write:remainingData];
     }];
     return [result setNameWithFormat:@"[%@] -rcr_write: %@", result.name, data];
+}
+
+- (RACSignal *)rcr_processInputStream:(NSInputStream *)inputStream bufferSize:(NSUInteger)bufferSize {
+    RACSubject *subject = [RACSubject subject];
+    RACSignal *result = [[inputStream rcr_readWithSampleSignal:subject]
+    flattenMap:^RACSignal *(NSData *data) {
+        return [[self rcr_write:data]
+        doCompleted:^{
+            [subject sendNext:@(bufferSize)];
+        }];
+    }];
+    return [result setNameWithFormat:@"[%@] -rcr_processInputStream: %@ bufferSize: %@", result.name, inputStream, @(bufferSize)];
+    
 }
 
 @end
