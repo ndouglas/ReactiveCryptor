@@ -9,3 +9,4 @@
 
 #import "RCRDefinitions.h"
 #import "RNDecryptor+ReactiveCryptor.h"
+#import "RNEncryptor+ReactiveCryptor.h"
