@@ -53,9 +53,5 @@
 }
 
 
-/**
-- (RACSignal *)rcr_write:(NSData *)data;
-- (RACSignal *)rcr_processInputStream:(NSInputStream *)inputStream bufferSize:(NSUInteger)bufferSize;
- */
 
 @end
