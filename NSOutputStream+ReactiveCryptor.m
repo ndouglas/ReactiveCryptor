@@ -50,4 +50,12 @@
     return [result setNameWithFormat:@"[%@] -rcr_processInputStream: %@ bufferSize: %@", result.name, inputStream, @(bufferSize)];    
 }
 
+- (RACSignal *)rcr_processInputStream:(NSInputStream *)inputStream sampleSignal:(RACSignal *)sampleSignal {
+    RACSignal *result = [[inputStream rcr_readWithSampleSignal:sampleSignal]
+    flattenMap:^RACSignal *(NSData *data) {
+        return [self rcr_write:data];
+    }];
+    return [result setNameWithFormat:@"[%@] -rcr_processInputStream: %@ sampleSignal: %@", result.name, inputStream, sampleSignal];
+}
+
 @end

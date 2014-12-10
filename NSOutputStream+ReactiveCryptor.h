@@ -32,4 +32,16 @@
 
 - (RACSignal *)rcr_processInputStream:(NSInputStream *)inputStream bufferSize:(NSUInteger)bufferSize;
 
+/**
+ Processes incoming data from the input stream sampled by the specified signal.
+ 
+ @param inputStream The stream from which to read incoming data.
+ @param sampleSignal A signal controlling the reading.  Each `next` should be an NSNumber<NSUInteger> specifying the
+ amount of data to read.
+ @return A signal that completes when the stream has finished processing data from the input stream, or an error if
+ one occurred while processing the input stream.
+ */
+
+- (RACSignal *)rcr_processInputStream:(NSInputStream *)inputStream sampleSignal:(RACSignal *)sampleSignal;
+
 @end
