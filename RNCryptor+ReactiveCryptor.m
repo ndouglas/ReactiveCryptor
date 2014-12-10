@@ -16,43 +16,60 @@
 
 - (RACSignal *)rcr_connectInputStream:(NSInputStream *)inputStream outputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize {
     @weakify(self)
+    NSLog(@"Connecting input stream to output stream.");
     RACSignal *result = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
         @strongify(self)
         @weakify(self)
         [inputStream open];
         [outputStream open];
+        NSLog(@"Creating subject.");
         RACBehaviorSubject *subject = [RACBehaviorSubject behaviorSubjectWithDefaultValue:@(bufferSize)];
         self.handler = ^(RNCryptor *cryptor, NSData *data) {
             NSLog(@"Handling data: %@", data);
             [[outputStream rcr_write:data]
             subscribeError:^(NSError *error) {
+                NSLog(@"Writer received error: %@", error);
                 [subscriber sendError:error];
             } completed:^{
+                NSLog(@"Writer received completed.");
                 if (!cryptor.isFinished) {
+                    NSLog(@"Signaling reader.");
                     [subject sendNext:@(bufferSize)];
                 } else {
+                    NSLog(@"Closing output stream.");
+                    [outputStream close];
+                    NSLog(@"Completing subject.");
+                    [subject sendCompleted];
+                    NSLog(@"Completing subscriber.");
                     [subscriber sendCompleted];
                 }
             }];
         };
-        [[inputStream rcr_readWithSampleSignal:subject]
+        NSLog(@"Creating reader.");
+        [[[inputStream rcr_readWithSampleSignal:subject]
+        takeUntilBlock:^BOOL(NSData *data) {
+            NSLog(@"Reader received (possibly zero-length) data: %@", data);
+            return data.length == 0;
+        }]
         subscribeNext:^(NSData *data) {
+            NSLog(@"Reader received data: %@", data);
             @strongify(self)
-            NSLog(@"Next: %@", data);
             [self addData:data];
         } error:^(NSError *error) {
-            NSLog(@"Error: %@", error);
+            NSLog(@"Reader received error: %@", error);
             [subscriber sendError:error];
         } completed:^{
+            NSLog(@"Reader received completed.");
             @strongify(self)
-            NSLog(@"Finishing...");
-            [self finish];
+            NSLog(@"Closing input stream.");
             [inputStream close];
+            NSLog(@"Finishing cryptor.");
+            [self finish];
         }];
         RACDisposable *result = [RACDisposable disposableWithBlock:^{
             @strongify(self)
+            NSLog(@"Disposing.");
             self.handler = nil;
-            [outputStream close];
         }];
         return result;
     }];

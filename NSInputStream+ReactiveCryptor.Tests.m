@@ -112,6 +112,7 @@
             XCTAssertNotNil(next);
             XCTAssertTrue(next.length == expectedLength);
             if (next.length == 0) {
+                [subject sendCompleted];
                 complete = YES;
             } else {
                 NSString *nextString = [[NSString alloc] initWithData:next encoding:NSUTF8StringEncoding];
