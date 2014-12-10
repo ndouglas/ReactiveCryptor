@@ -60,6 +60,27 @@
 - (void)testProcessInputStreamBufferSize {
     [self rcr_expectCompletionFromSignal:[outputStream rcr_processInputStream:inputStream bufferSize:36] timeout:5.0 description:@"write completed"];
     XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
+
+    NSString *thisString = [[NSUUID UUID] UUIDString];
+    NSData *thisData = [thisString dataUsingEncoding:NSUTF8StringEncoding];
+    for (int i = 1; i < thisData.length; i++) {
+        NSInputStream *thisInputStream = [[NSInputStream alloc] initWithData:thisData];
+        [thisInputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+        [thisInputStream open];
+        NSOutputStream *thisOutputStream = [[NSOutputStream alloc] initToMemory];
+        [thisOutputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+        [thisOutputStream open];
+        [self rcr_expectCompletionFromSignal:[[thisOutputStream rcr_processInputStream:thisInputStream bufferSize:i]
+        then:^RACSignal * {
+            XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
+            return [RACSignal empty];
+        }]
+        timeout:5.0 description:@"read data successfully"];
+        [thisInputStream close];
+        [thisInputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+        [thisOutputStream close];
+        [thisOutputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    }
 }
 
 - (void)testProcessInputStreamSampleSignal {
@@ -67,6 +88,29 @@
     [self rcr_expectCompletionFromSignal:[outputStream rcr_processInputStream:inputStream sampleSignal:[subject sample:[RACSignal interval:0.1 onScheduler:[RACScheduler mainThreadScheduler]]]]
     timeout:5.0 description:@"write completed"];
     XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
+
+    NSString *thisString = [[NSUUID UUID] UUIDString];
+    NSData *thisData = [thisString dataUsingEncoding:NSUTF8StringEncoding];
+    for (int i = 1; i < thisData.length; i++) {
+        RACBehaviorSubject *subject = [RACBehaviorSubject behaviorSubjectWithDefaultValue:@(i)];
+        NSInputStream *thisInputStream = [[NSInputStream alloc] initWithData:thisData];
+        [thisInputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+        [thisInputStream open];
+        NSOutputStream *thisOutputStream = [[NSOutputStream alloc] initToMemory];
+        [thisOutputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+        [thisOutputStream open];
+        [self rcr_expectCompletionFromSignal:[[thisOutputStream rcr_processInputStream:thisInputStream sampleSignal:[subject sample:[RACSignal interval:0.001 onScheduler:[RACScheduler mainThreadScheduler]]]]
+        then:^RACSignal * {
+            XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
+            return [RACSignal empty];
+        }]
+        timeout:5.0 description:@"read data successfully"];
+        [thisInputStream close];
+        [thisInputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+        [thisOutputStream close];
+        [thisOutputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    }
+    
 }
 
 @end
