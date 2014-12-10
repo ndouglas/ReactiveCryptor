@@ -42,7 +42,7 @@
 
 - (RACSignal *)rcr_write:(NSData *)data {
     @weakify(self)
-    RACSignal *result = [[self rcr_writeOnce:[data copy]]
+    RACSignal *result = [[self rcr_writeOnce:data]
     flattenMap:^RACSignal *(NSData *remainingData) {
         @strongify(self)
         return [self rcr_write:remainingData];

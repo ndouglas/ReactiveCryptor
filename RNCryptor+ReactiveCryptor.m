@@ -26,24 +26,22 @@
         RACBehaviorSubject *subject = [RACBehaviorSubject behaviorSubjectWithDefaultValue:@(bufferSize)];
         self.handler = ^(RNCryptor *cryptor, NSData *data) {
             NSLog(@"Handling data: %@", data);
-            [[outputStream rcr_write:data]
-            subscribeError:^(NSError *error) {
+            NSError *error = nil;
+            if (![[outputStream rcr_write:data] waitUntilCompleted:&error]) {
                 NSLog(@"Writer received error: %@", error);
                 [subscriber sendError:error];
-            } completed:^{
-                NSLog(@"Writer received completed.");
-                if (!cryptor.isFinished) {
-                    NSLog(@"Signaling reader.");
-                    [subject sendNext:@(bufferSize)];
-                } else {
-                    NSLog(@"Closing output stream.");
-                    [outputStream close];
-                    NSLog(@"Completing subject.");
-                    [subject sendCompleted];
-                    NSLog(@"Completing subscriber.");
-                    [subscriber sendCompleted];
-                }
-            }];
+            } else if (!cryptor.isFinished) {
+                NSLog(@"Signaling reader.");
+                [subject sendNext:@(bufferSize)];
+            } else {
+                NSLog(@"Closing output stream.");
+                [outputStream close];
+                NSLog(@"Completing subject.");
+                [subject sendCompleted];
+                NSLog(@"Completing subscriber.");
+                [subscriber sendCompleted];
+            
+            }
         };
         NSLog(@"Creating reader.");
         [[[inputStream rcr_readWithSampleSignal:subject]
