@@ -57,5 +57,10 @@
     XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
 }
 
+- (void)testProcessInputStreamBufferSize {
+    [self rcr_expectCompletionFromSignal:[outputStream rcr_processInputStream:inputStream bufferSize:36] timeout:5.0 description:@"write completed"];
+    XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
+}
+
 
 @end
