@@ -39,7 +39,7 @@
 }
 
 - (RACSignal *)rcr_processInputStream:(NSInputStream *)inputStream bufferSize:(NSUInteger)bufferSize {
-    RACSubject *subject = [RACSubject subject];
+    RACBehaviorSubject *subject = [RACBehaviorSubject behaviorSubjectWithDefaultValue:@(bufferSize)];
     RACSignal *result = [[inputStream rcr_readWithSampleSignal:subject]
     flattenMap:^RACSignal *(NSData *data) {
         return [[self rcr_write:data]
