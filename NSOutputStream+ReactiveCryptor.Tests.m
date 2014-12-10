@@ -62,5 +62,11 @@
     XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
 }
 
+- (void)testProcessInputStreamSampleSignal {
+    RACBehaviorSubject *subject = [RACBehaviorSubject behaviorSubjectWithDefaultValue:@(36)];
+    [self rcr_expectCompletionFromSignal:[outputStream rcr_processInputStream:inputStream sampleSignal:[subject sample:[RACSignal interval:0.1 onScheduler:[RACScheduler mainThreadScheduler]]]]
+    timeout:5.0 description:@"write completed"];
+    XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
+}
 
 @end
