@@ -14,4 +14,75 @@
 
 @implementation RNCryptor (ReactiveCryptor)
 
+- (RACSignal *)rcr_connectInputStream:(NSInputStream *)inputStream outputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize {
+    @weakify(self)
+    RACSignal *result = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
+        @strongify(self)
+        @weakify(self)
+        [inputStream open];
+        [outputStream open];
+        RACBehaviorSubject *subject = [RACBehaviorSubject behaviorSubjectWithDefaultValue:@(bufferSize)];
+        self.handler = ^(RNCryptor *cryptor, NSData *data) {
+            NSLog(@"Handling data: %@", data);
+            [[outputStream rcr_write:data]
+            subscribeError:^(NSError *error) {
+                [subscriber sendError:error];
+            } completed:^{
+                if (!cryptor.isFinished) {
+                    [subject sendNext:@(bufferSize)];
+                } else {
+                    [subscriber sendCompleted];
+                }
+            }];
+        };
+        [[inputStream rcr_readWithSampleSignal:subject]
+        subscribeNext:^(NSData *data) {
+            @strongify(self)
+            NSLog(@"Next: %@", data);
+            [self addData:data];
+        } error:^(NSError *error) {
+            NSLog(@"Error: %@", error);
+            [subscriber sendError:error];
+        } completed:^{
+            @strongify(self)
+            NSLog(@"Finishing...");
+            [self finish];
+            [inputStream close];
+        }];
+        RACDisposable *result = [RACDisposable disposableWithBlock:^{
+            @strongify(self)
+            self.handler = nil;
+            [outputStream close];
+        }];
+        return result;
+    }];
+    return [result setNameWithFormat:@"[%@] -rcr_connectInputStream: %@ outputStream: %@ bufferSize: %@", result.name, inputStream, outputStream, @(bufferSize)];
+}
+
+- (RACSignal *)rcr_afterOpeningStream:(NSStream *)openingStream connectInputStream:(NSInputStream *)inputStream outputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize {
+    RACSignal *result = [[openingStream rcr_openSignal]
+    then:^RACSignal *{
+        return [self rcr_connectInputStream:inputStream outputStream:outputStream bufferSize:bufferSize];
+    }];
+    return [result setNameWithFormat:@"[%@] -rcr_afterOpeningStream: %@ connectInputStream: %@ sampleSignal: %@", result.name, openingStream, inputStream, outputStream];
+}
+
+- (RACSignal *)rcr_processInputStream:(NSInputStream *)inputStream bufferSize:(NSUInteger)bufferSize {
+    NSInputStream *resultStream = nil;
+    NSOutputStream *outputStream = nil;
+    [NSStream rcr_createStreamPairWithBufferSize:bufferSize inputStream:&resultStream outputStream:&outputStream];
+    RACSignal *result = [[RACSignal return:resultStream]
+    concat:[self rcr_afterOpeningStream:resultStream connectInputStream:inputStream outputStream:outputStream bufferSize:bufferSize]];
+    return [result setNameWithFormat:@"[%@] -rcr_processInputStream: %@ bufferSize: %@", result.name, inputStream, @(bufferSize)];
+}
+
+- (RACSignal *)rcr_processOutputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize {
+    NSInputStream *inputStream = nil;
+    NSOutputStream *resultStream = nil;
+    [NSStream rcr_createStreamPairWithBufferSize:bufferSize inputStream:&inputStream outputStream:&resultStream];
+    RACSignal *result = [[RACSignal return:resultStream]
+    concat:[self rcr_afterOpeningStream:resultStream connectInputStream:inputStream outputStream:outputStream bufferSize:bufferSize]];
+    return [result setNameWithFormat:@"[%@] -rcr_processOutputStream: %@ bufferSize: %@", result.name, outputStream, @(bufferSize)];
+}
+
 @end

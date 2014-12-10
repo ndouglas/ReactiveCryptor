@@ -22,10 +22,12 @@
  
  @param data A block of data.
  @param password A password.
- @return A signal that will at some point contain a block of decrypted data, or an error if the data could not be
+ @return A signal that will return an NSOutputStream instance that will , or an error if the data could not be
  encrypted.
  */
 
 + (RACSignal *)rcr_decryptData:(NSData *)data password:(NSString *)password;
+
++ (RACSignal *)rcr_decryptStream:(NSOutputStream *)inputStream password:(NSString *)password;
 
 @end

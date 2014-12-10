@@ -18,7 +18,9 @@
         NSInteger bytesWritten = [self write:data.bytes maxLength:data.length];
         if (bytesWritten != data.length) {
             if (self.streamStatus == NSStreamStatusAtEnd || self.streamStatus == NSStreamStatusClosed || self.streamStatus == NSStreamStatusError) {
-                [subscriber sendError:self.streamError];
+                if (self.streamError) {
+                    [subscriber sendError:self.streamError];
+                }
             } else {
                 NSData *remainingData = bytesWritten > 0 ? [data subdataWithRange:NSMakeRange(bytesWritten, (data.length - bytesWritten))] : data;
                 [subscriber sendNext:remainingData];

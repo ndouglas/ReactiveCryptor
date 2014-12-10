@@ -104,8 +104,11 @@
     BOOL passed = block();
     NSDate *timeoutDate = [NSDate dateWithTimeIntervalSinceNow:timeout];
     if (!passed) {
-        while (!(passed = block()) && [timeoutDate timeIntervalSinceNow] >0) {
+        while (!(passed = block()) && [timeoutDate timeIntervalSinceNow] > 0) {
             [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:interval]];
+        }
+        if (!passed) {
+            passed = block();
         }
     }
     if (passed) {

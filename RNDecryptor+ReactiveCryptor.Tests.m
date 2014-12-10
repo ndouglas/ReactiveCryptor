@@ -10,7 +10,12 @@
 #import "ReactiveCryptor.h"
 #import "RCRTestDefinitions.h"
 
-@interface RNDecryptor_ReactiveCryptorTests : XCTestCase
+@interface RNDecryptor_ReactiveCryptorTests : XCTestCase {
+    NSInputStream *inputStream;
+    NSOutputStream *outputStream;
+    NSString *testString;
+    NSData *testData;
+}
 
 @end
 
@@ -18,16 +23,21 @@
 
 - (void)setUp {
 	[super setUp];
+    testString = [[NSUUID UUID] UUIDString];
+    testData = [testString dataUsingEncoding:NSUTF8StringEncoding];
+    inputStream = [[NSInputStream alloc] initWithData:testData];
+    [inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    [inputStream open];
 }
 
 - (void)tearDown {
+    [inputStream close];
+    [inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    inputStream = nil;
 	[super tearDown];
 }
 
 - (void)test {
-	/*
-		Run a test here.
-	*/
 }
 
 @end

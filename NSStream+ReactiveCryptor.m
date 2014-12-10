@@ -30,10 +30,8 @@
         @strongify(self)
         @weakify(self)
         __block void (^checker)(void);
-        @weakify(checker)
         checker = ^{
             @strongify(self)
-            @strongify(checker)
             NSStreamStatus streamStatus = [self streamStatus];
             switch (streamStatus) {
                 case NSStreamStatusNotOpen:

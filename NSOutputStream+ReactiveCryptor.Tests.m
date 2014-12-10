@@ -47,7 +47,7 @@
     return [anOutputStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
 }
 
-- (void)trivalTest {
+- (void)testTrivialFunctionality {
 	[outputStream write:testData.bytes maxLength:testData.length];
     XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
 }
