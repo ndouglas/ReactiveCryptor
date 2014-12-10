@@ -28,9 +28,11 @@
 }
 
 + (RACSignal *)rcr_decryptStream:(NSInputStream *)inputStream password:(NSString *)password {
-    RNDecryptor *decryptor = [[RNDecryptor alloc] initWithPassword:password handler:^(RNCryptor *cryptor, NSData *data) { }];
+    RNDecryptor *decryptor = [[RNDecryptor alloc] initWithPassword:password handler:^(RNCryptor *cryptor, NSData *data) {
+        NSCAssert(NO, @"Premature invocation of cryptor %@ with data %@", cryptor, data);
+    }];
     RACSignal *result = [decryptor rcr_processInputStream:inputStream bufferSize:8*1024];
-    return [result setNameWithFormat:@"[%@] +rcr_decryptStream: %@ password: %@", inputStream, password];
+    return [result setNameWithFormat:@"[%@] +rcr_decryptStream: %@ password: %@", result.name, inputStream, password];
 }
 
 @end

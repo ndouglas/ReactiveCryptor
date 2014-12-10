@@ -147,11 +147,13 @@
     XCTAssertEqualObjects([[NSString alloc] initWithData:[self dataInOutputStream:outputStreamB] encoding:NSUTF8StringEncoding], testString);
 }
 
+- (void)testAfterOpeningStreamConnectionInputStreamOutputStreamBufferSize {
+    
+}
+
 @end
 
 /**
-- (RACSignal *)rcr_connectInputStream:(NSInputStream *)inputStream outputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize;
-- (RACSignal *)rcr_readFromInputStream:(NSInputStream *)inputStream sampleSignal:(RACSignal *)sampleSignal;
 - (RACSignal *)rcr_afterOpeningStream:(NSStream *)openingStream connectInputStream:(NSInputStream *)inputStream outputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize;
 - (RACSignal *)rcr_processInputStream:(NSInputStream *)inputStream bufferSize:(NSUInteger)bufferSize;
 - (RACSignal *)rcr_processOutputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize;
