@@ -37,8 +37,26 @@
 
 - (RACSignal *)rcr_afterOpeningStream:(NSStream *)openingStream connectInputStream:(NSInputStream *)inputStream outputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize;
 
-- (RACSignal *)rcr_processInputStream:(NSInputStream *)inputStream bufferSize:(NSUInteger)bufferSize;
+/**
+ Connects the input stream to an output stream and returns a new input stream that will be appropriately processed.
+ 
+ @param inputStream The input stream to process.
+ @param bufferSize The size of the buffer to use in processing.
+ @return A signal that will return a new input stream and complete or send an error when the processing has succeeded or failed.
+ @discussion Processing will begin when the returned input stream is opened.
+ */
 
-- (RACSignal *)rcr_processOutputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize;
+- (RACSignal *)rcr_processedInputStream:(NSInputStream *)inputStream bufferSize:(NSUInteger)bufferSize;
+
+/**
+ Connects the ouput stream to an input stream and returns a new output stream that will be appropriately processed.
+ 
+ @param outputStream The output stream to process.
+ @param bufferSize The size of the buffer to use in processing.
+ @return A signal that will return a new output stream and complete or send an error when the processing has succeeded or failed.
+ @discussion Processing will begin when the returned output stream is opened.
+ */
+
+- (RACSignal *)rcr_processedOutputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize;
 
 @end

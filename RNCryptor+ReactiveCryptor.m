@@ -16,57 +16,41 @@
 
 - (RACSignal *)rcr_connectInputStream:(NSInputStream *)inputStream outputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize {
     @weakify(self)
-    NSLog(@"Connecting input stream to output stream.");
     RACSignal *result = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
         @strongify(self)
         @weakify(self)
         [inputStream open];
         [outputStream open];
-        NSLog(@"Creating subject.");
-        RACBehaviorSubject *subject = [RACBehaviorSubject behaviorSubjectWithDefaultValue:@(bufferSize)];
+        RACSubject *subject = [RACSubject subject];
         self.handler = ^(RNCryptor *cryptor, NSData *data) {
-            NSLog(@"Handling data: %@", data);
             NSError *error = nil;
             if (![[outputStream rcr_write:data] waitUntilCompleted:&error]) {
-                NSLog(@"Writer received error: %@", error);
                 [subscriber sendError:error];
             } else if (!cryptor.isFinished) {
-                NSLog(@"Signaling reader.");
                 [subject sendNext:@(bufferSize)];
             } else {
-                NSLog(@"Closing output stream.");
                 [outputStream close];
-                NSLog(@"Completing subject.");
                 [subject sendCompleted];
-                NSLog(@"Completing subscriber.");
                 [subscriber sendCompleted];
             
             }
         };
-        NSLog(@"Creating reader.");
-        [[[inputStream rcr_readWithSampleSignal:subject]
+        [[[inputStream rcr_readWithSampleSignal:[subject startWith:@(bufferSize)]]
         takeUntilBlock:^BOOL(NSData *data) {
-            NSLog(@"Reader received (possibly zero-length) data: %@", data);
             return data.length == 0;
         }]
         subscribeNext:^(NSData *data) {
-            NSLog(@"Reader received data: %@", data);
             @strongify(self)
             [self addData:data];
         } error:^(NSError *error) {
-            NSLog(@"Reader received error: %@", error);
             [subscriber sendError:error];
         } completed:^{
-            NSLog(@"Reader received completed.");
             @strongify(self)
-            NSLog(@"Closing input stream.");
             [inputStream close];
-            NSLog(@"Finishing cryptor.");
             [self finish];
         }];
         RACDisposable *result = [RACDisposable disposableWithBlock:^{
             @strongify(self)
-            NSLog(@"Disposing.");
             self.handler = nil;
         }];
         return result;
@@ -82,7 +66,7 @@
     return [result setNameWithFormat:@"[%@] -rcr_afterOpeningStream: %@ connectInputStream: %@ sampleSignal: %@", result.name, openingStream, inputStream, outputStream];
 }
 
-- (RACSignal *)rcr_processInputStream:(NSInputStream *)inputStream bufferSize:(NSUInteger)bufferSize {
+- (RACSignal *)rcr_processedInputStream:(NSInputStream *)inputStream bufferSize:(NSUInteger)bufferSize {
     NSInputStream *resultStream = nil;
     NSOutputStream *outputStream = nil;
     [NSStream rcr_createStreamPairWithBufferSize:bufferSize inputStream:&resultStream outputStream:&outputStream];
@@ -91,7 +75,7 @@
     return [result setNameWithFormat:@"[%@] -rcr_processInputStream: %@ bufferSize: %@", result.name, inputStream, @(bufferSize)];
 }
 
-- (RACSignal *)rcr_processOutputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize {
+- (RACSignal *)rcr_processedOutputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize {
     NSInputStream *inputStream = nil;
     NSOutputStream *resultStream = nil;
     [NSStream rcr_createStreamPairWithBufferSize:bufferSize inputStream:&inputStream outputStream:&resultStream];

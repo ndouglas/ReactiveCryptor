@@ -17,12 +17,9 @@
     RACSignal *result = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
         @strongify(self)
         RACDisposable *result = nil;
-        NSLog(@"Writing data: %@", data);
         NSInteger bytesWritten = [self write:data.bytes maxLength:data.length];
-        NSLog(@"Wrote %@ of %@ bytes.", @(bytesWritten), @(data.length));
         if (bytesWritten != data.length) {
             if (self.streamStatus == NSStreamStatusAtEnd || self.streamStatus == NSStreamStatusClosed || self.streamStatus == NSStreamStatusError) {
-                NSLog(@"Encountered status: %@", @(self.streamStatus));
                 if (self.streamError) {
                     [subscriber sendError:self.streamError];
                 }
@@ -31,8 +28,6 @@
                 NSData *remainingData = bytesWritten > 0 ? [data subdataWithRange:NSMakeRange(bytesWritten, (data.length - bytesWritten))] : data;
                 [subscriber sendNext:remainingData];
             }
-        } else {
-            NSLog(@"Written!");
         }
         [subscriber sendCompleted];
         return result;

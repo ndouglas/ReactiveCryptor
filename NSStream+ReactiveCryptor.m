@@ -29,8 +29,7 @@
     RACSignal *result = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
         @strongify(self)
         @weakify(self)
-        __block void (^checker)(void);
-        checker = ^{
+        __block void (^checker)(void) = ^{
             @strongify(self)
             NSStreamStatus streamStatus = [self streamStatus];
             switch (streamStatus) {
