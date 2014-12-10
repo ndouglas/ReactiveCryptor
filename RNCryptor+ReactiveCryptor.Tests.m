@@ -147,14 +147,52 @@
     XCTAssertEqualObjects([[NSString alloc] initWithData:[self dataInOutputStream:outputStreamB] encoding:NSUTF8StringEncoding], testString);
 }
 
-- (void)testAfterOpeningStreamConnectionInputStreamOutputStreamBufferSize {
-    
+- (void)testProcessedInputStreamBufferSize {
+    __block NSInputStream *processedInputStream;
+    RNEncryptor *encryptor = [[RNEncryptor alloc] initWithSettings:kRNCryptorAES256Settings password:@"password" handler:^(RNCryptor *cryptor, NSData *data) { }];
+    [[encryptor rcr_processedInputStream:inputStream bufferSize:32 * 1024]
+    subscribeNext:^(NSInputStream *nextInputStream) {
+        NSLog(@"Next: %@", nextInputStream);
+        processedInputStream = nextInputStream;
+        [processedInputStream open];
+    } error:^(NSError *error) {
+        NSLog(@"Error: %@", error);
+    } completed:^{
+        NSLog(@"Completed!");
+    }];
+    [self rcr_expectCondition:^BOOL {
+        return [processedInputStream hasBytesAvailable];
+    } beforeTimeout:5.0 interval:0.1 description:@"data was encrypted"];
+    NSMutableData *encryptedData = [NSMutableData dataWithLength:32 * 1024];
+    NSUInteger bytesRead = [processedInputStream read:encryptedData.mutableBytes maxLength:32 * 1024];
+    if (bytesRead > 0) {
+        [encryptedData setLength:bytesRead];
+    }
+    XCTAssertEqualObjects([RNDecryptor decryptData:encryptedData withPassword:@"password" error:NULL], testData);
+}
+
+- (void)testProcessedOutputStreamBufferSize {
+    __block NSOutputStream *processedOutputStream;
+    __block NSUInteger bytesWritten = 0;
+    NSData *synchronouslyEncryptedData = [RNEncryptor encryptData:testData withSettings:kRNCryptorAES256Settings password:@"password" error:NULL];
+    RNDecryptor *decryptor = [[RNDecryptor alloc] initWithPassword:@"password" handler:^(RNCryptor *cryptor, NSData *data) { }];
+    [[decryptor rcr_processedOutputStream:outputStream bufferSize:32 * 1024]
+    subscribeNext:^(NSOutputStream *nextOutputStream) {
+        NSLog(@"Next: %@", nextOutputStream);
+        processedOutputStream = nextOutputStream;
+        [processedOutputStream open];
+        [processedOutputStream write:synchronouslyEncryptedData.bytes maxLength:synchronouslyEncryptedData.length];
+        [processedOutputStream close];
+    } error:^(NSError *error) {
+        NSLog(@"Error: %@", error);
+    } completed:^{
+        NSLog(@"Completed!");
+    }];
+    [self rcr_expectCondition:^BOOL {
+        return bytesWritten == testData.length;
+    } beforeTimeout:5.0 interval:0.1 description:@"data was decrypted"];
+    NSData *outputData = [self dataInOutputStream:outputStream];
+    XCTAssertEqualObjects(outputData, testData);
 }
 
 @end
-
-/**
-- (RACSignal *)rcr_afterOpeningStream:(NSStream *)openingStream connectInputStream:(NSInputStream *)inputStream outputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize;
-- (RACSignal *)rcr_processInputStream:(NSInputStream *)inputStream bufferSize:(NSUInteger)bufferSize;
-- (RACSignal *)rcr_processOutputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize;
-*/
