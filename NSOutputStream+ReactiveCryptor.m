@@ -23,9 +23,8 @@
                 NSData *remainingData = bytesWritten > 0 ? [data subdataWithRange:NSMakeRange(bytesWritten, (data.length - bytesWritten))] : data;
                 [subscriber sendNext:remainingData];
             }
-        } else {
-            [subscriber sendCompleted];
         }
+        [subscriber sendCompleted];
         return result;
     }];
     return [result setNameWithFormat:@"[%@] -rcr_writeOnce: %@", result.name, data];
