@@ -52,6 +52,10 @@
     XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
 }
 
+- (void)testWrite {
+    [self rcr_expectCompletionFromSignal:[outputStream rcr_write:testData] timeout:1.0 description:@"write completed"];
+    XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
+}
 
 
 @end
