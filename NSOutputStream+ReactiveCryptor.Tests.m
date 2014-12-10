@@ -27,6 +27,7 @@
     testData = [testString dataUsingEncoding:NSUTF8StringEncoding];
     inputStream = [[NSInputStream alloc] initWithData:testData];
     [inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    [inputStream open];
     outputStream = [[NSOutputStream alloc] initToMemory];
     [outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     [outputStream open];
