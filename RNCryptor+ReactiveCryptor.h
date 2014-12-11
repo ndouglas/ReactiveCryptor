@@ -23,6 +23,7 @@
  @discussion bufferSize needs to be at least the size of the header block.
  */
 
+- (RACSignal *)rcr2_connectInputStream:(NSInputStream *)inputStream outputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize;
 - (RACSignal *)rcr_connectInputStream:(NSInputStream *)inputStream outputStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize;
 
 /**

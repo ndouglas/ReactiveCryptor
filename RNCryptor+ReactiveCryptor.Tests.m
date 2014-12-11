@@ -56,8 +56,34 @@
     XCTAssertEqualObjects(synchronouslyDecryptedData, testData, @"Error: %@", error);
 }
 
+- (void)testConnectInputStreamOutputStreamBufferSize_Reference {
+    RNEncryptor *encryptor = [[RNEncryptor alloc] initWithSettings:kRNCryptorAES256Settings password:@"password" handler:^(RNCryptor *cryptor, NSData *data) {
+        NSLog(@"WTF");
+    }];
+    NSInputStream *inputStreamA = [[NSInputStream alloc] initWithData:testData];
+    [inputStreamA scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    [inputStreamA open];
+    NSOutputStream *outputStreamA = [NSOutputStream outputStreamToMemory];
+    [outputStreamA scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    [outputStreamA open];
+    [[encryptor rcr2_connectInputStream:inputStreamA outputStream:outputStreamA bufferSize:32 * 1024]
+    subscribeNext:^(id x) {
+        XCTFail(@"Next: %@", x);
+    } error:^(NSError *error) {
+        XCTFail(@"Error: %@", error);
+    } completed:^{
+        NSLog(@"Encryptor completed!");
+    }];
+    [self rcr_expectCondition:^BOOL {
+        return [[self dataInOutputStream:outputStreamA] length] > 0;
+    } beforeTimeout:5.0 interval:0.1 description:@"data was encrypted"];
+    XCTAssertEqualObjects([RNDecryptor decryptData:[self dataInOutputStream:outputStreamA] withPassword:@"password" error:NULL], testData);
+}
+
 - (void)testConnectInputStreamOutputStreamBufferSize {
-    RNEncryptor *encryptor = [[RNEncryptor alloc] initWithSettings:kRNCryptorAES256Settings password:@"password" handler:^(RNCryptor *cryptor, NSData *data) { }];
+    RNEncryptor *encryptor = [[RNEncryptor alloc] initWithSettings:kRNCryptorAES256Settings password:@"password" handler:^(RNCryptor *cryptor, NSData *data) {
+        NSLog(@"WTF");
+    }];
     NSInputStream *inputStreamA = [[NSInputStream alloc] initWithData:testData];
     [inputStreamA scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     [inputStreamA open];
@@ -66,11 +92,11 @@
     [outputStreamA open];
     [[encryptor rcr_connectInputStream:inputStreamA outputStream:outputStreamA bufferSize:32 * 1024]
     subscribeNext:^(id x) {
-        NSLog(@"Next: %@", x);
+        XCTFail(@"Next: %@", x);
     } error:^(NSError *error) {
-        NSLog(@"Error: %@", error);
+        XCTFail(@"Error: %@", error);
     } completed:^{
-        NSLog(@"Completed!");
+        NSLog(@"Encryptor completed!");
     }];
     [self rcr_expectCondition:^BOOL {
         return [[self dataInOutputStream:outputStreamA] length] > 0;
@@ -78,10 +104,36 @@
     XCTAssertEqualObjects([RNDecryptor decryptData:[self dataInOutputStream:outputStreamA] withPassword:@"password" error:NULL], testData);
 }
 
+- (void)testConnectInputStreamOutputStreamBufferSize2_Reference {
+    NSData *synchronouslyEncryptedData = [RNEncryptor encryptData:testData withSettings:kRNCryptorAES256Settings password:@"password" error:NULL];
+    RNDecryptor *decryptor = [[RNDecryptor alloc] initWithPassword:@"password" handler:^(RNCryptor *cryptor, NSData *data) {
+        NSLog(@"WTF");
+    }];
+    NSInputStream *inputStreamB = [[NSInputStream alloc] initWithData:synchronouslyEncryptedData];
+    [inputStreamB scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    [inputStreamB open];
+    NSOutputStream *outputStreamB = [[NSOutputStream alloc] initToMemory];
+    [outputStreamB scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    [outputStreamB open];
+    [[decryptor rcr2_connectInputStream:inputStreamB outputStream:outputStreamB bufferSize:32 * 1024]
+    subscribeNext:^(id x) {
+        XCTFail(@"Next: %@", x);
+    } error:^(NSError *error) {
+        XCTFail(@"Error: %@", error);
+    } completed:^{
+        NSLog(@"Decryptor completed!");
+    }];
+    [self rcr_expectCondition:^BOOL {
+        return [[self dataInOutputStream:outputStreamB] length] > 0;
+    } beforeTimeout:5.0 interval:0.1 description:@"data was decrypted"];
+    XCTAssertEqualObjects([[NSString alloc] initWithData:[self dataInOutputStream:outputStreamB] encoding:NSUTF8StringEncoding], testString);
+}
+
 - (void)testConnectInputStreamOutputStreamBufferSize2 {
     NSData *synchronouslyEncryptedData = [RNEncryptor encryptData:testData withSettings:kRNCryptorAES256Settings password:@"password" error:NULL];
-    __block NSData *decryptedData = nil;
-    RNDecryptor *decryptor = [[RNDecryptor alloc] initWithPassword:@"password" handler:^(RNCryptor *cryptor, NSData *data) { }];
+    RNDecryptor *decryptor = [[RNDecryptor alloc] initWithPassword:@"password" handler:^(RNCryptor *cryptor, NSData *data) {
+        NSLog(@"WTF");
+    }];
     NSInputStream *inputStreamB = [[NSInputStream alloc] initWithData:synchronouslyEncryptedData];
     [inputStreamB scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     [inputStreamB open];
@@ -90,22 +142,23 @@
     [outputStreamB open];
     [[decryptor rcr_connectInputStream:inputStreamB outputStream:outputStreamB bufferSize:32 * 1024]
     subscribeNext:^(id x) {
-        NSLog(@"Decryptor received next: %@", x);
+        XCTFail(@"Next: %@", x);
     } error:^(NSError *error) {
-        NSLog(@"Decryptor received error: %@", error);
+        XCTFail(@"Error: %@", error);
     } completed:^{
         NSLog(@"Decryptor completed!");
     }];
     [self rcr_expectCondition:^BOOL {
-        decryptedData = [self dataInOutputStream:outputStreamB];
-        return decryptedData.length > 0;
+        return [[self dataInOutputStream:outputStreamB] length] > 0;
     } beforeTimeout:5.0 interval:0.1 description:@"data was decrypted"];
     XCTAssertEqualObjects([[NSString alloc] initWithData:[self dataInOutputStream:outputStreamB] encoding:NSUTF8StringEncoding], testString);
 }
 
 - (void)testConnectInputStreamOutputStreamBufferSize3 {
     __block NSData *encryptedData = nil;
-    RNEncryptor *encryptor = [[RNEncryptor alloc] initWithSettings:kRNCryptorAES256Settings password:@"password" handler:^(RNCryptor *cryptor, NSData *data) { }];
+    RNEncryptor *encryptor = [[RNEncryptor alloc] initWithSettings:kRNCryptorAES256Settings password:@"password" handler:^(RNCryptor *cryptor, NSData *data) {
+        NSLog(@"WTF");
+    }];
     NSInputStream *inputStreamA = [[NSInputStream alloc] initWithData:testData];
     [inputStreamA scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     [inputStreamA open];
@@ -149,7 +202,9 @@
 
 - (void)testProcessedInputStreamBufferSize {
     __block NSInputStream *processedInputStream;
-    RNEncryptor *encryptor = [[RNEncryptor alloc] initWithSettings:kRNCryptorAES256Settings password:@"password" handler:^(RNCryptor *cryptor, NSData *data) { }];
+    RNEncryptor *encryptor = [[RNEncryptor alloc] initWithSettings:kRNCryptorAES256Settings password:@"password" handler:^(RNCryptor *cryptor, NSData *data) {
+        NSLog(@"WTF");
+    }];
     [[encryptor rcr_processedInputStream:inputStream bufferSize:32 * 1024]
     subscribeNext:^(NSInputStream *nextInputStream) {
         NSLog(@"Next: %@", nextInputStream);
