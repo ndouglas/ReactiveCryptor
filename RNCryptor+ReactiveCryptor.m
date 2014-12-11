@@ -15,13 +15,14 @@
 @implementation RNCryptor (ReactiveCryptor)
 
 - (void)rcr_setOutputStream:(NSOutputStream *)outputStream dataRequestHandler:(void (^)(RNCryptor *cryptor))dataRequestHandler endOfStreamHandler:(void (^)(NSError *error))endOfStreamHandler {
+    NSParameterAssert(outputStream);
+    NSParameterAssert(dataRequestHandler);
+    NSParameterAssert(endOfStreamHandler);
     [outputStream open];
     @weakify(self)
     void (^completionHandler)(NSError *) = ^(NSError *error) {
         [outputStream close];
-        if (endOfStreamHandler) {
-            endOfStreamHandler(error);
-        }
+        endOfStreamHandler(error);
         self.handler = nil;
     };
     self.handler = ^(RNCryptor *cryptor, NSData *data) {
@@ -39,30 +40,29 @@
         } else {
             if (cryptor.isFinished) {
                 completionHandler(nil);
-            } else if (dataRequestHandler) {
+            } else {
                 dataRequestHandler(self);
             }
         }
     };
-    if (dataRequestHandler) {
-        dataRequestHandler(self);
-    }
+    dataRequestHandler(self);
 }
 
 - (void)rcr_startProcessingStream:(NSInputStream *)inputStream intoDestinationStream:(NSOutputStream *)outputStream bufferSize:(NSUInteger)bufferSize endOfStreamHandler:(void (^)(NSError *error))endOfStreamHandler {
+    NSParameterAssert(inputStream);
+    NSParameterAssert(outputStream);
+    NSParameterAssert(endOfStreamHandler);
     [inputStream open];
     void (^completionHandler)(NSError *) = ^(NSError *error) {
         [inputStream close];
-        if (endOfStreamHandler) {
-            endOfStreamHandler(error);
-        }
+        endOfStreamHandler(error);
     };
     NSMutableData *buffer = [NSMutableData dataWithCapacity:bufferSize];
     void (^dataRequestHandler)(RNCryptor *cryptor) = ^(RNCryptor *cryptor) {
         [buffer setLength:bufferSize];
         NSInteger bytesRead = [inputStream read:buffer.mutableBytes maxLength:bufferSize];
         if (bytesRead < 0) {
-            completionHandler([inputStream streamError]);
+            completionHandler(inputStream.streamError);
         } else if (bytesRead == 0) {
             [cryptor finish];
         } else {
