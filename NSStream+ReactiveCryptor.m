@@ -29,13 +29,14 @@
     RACSignal *result = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
         @strongify(self)
         @weakify(self)
-        __block void (^checker)(void) = ^{
+        RACDisposable *result = [[RACScheduler schedulerWithPriority:RACSchedulerPriorityBackground]
+        scheduleRecursiveBlock:^(void (^reschedule)(void)) {
             @strongify(self)
             NSStreamStatus streamStatus = [self streamStatus];
             switch (streamStatus) {
                 case NSStreamStatusNotOpen:
                 case NSStreamStatusOpening:
-                    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), checker);
+                    reschedule();
                     break;
                 case NSStreamStatusOpen:
                     [subscriber sendCompleted];
@@ -47,12 +48,12 @@
                     break;
                 case NSStreamStatusError:
                 default:
-                    [subscriber sendError:[self streamError]];
+                    [subscriber sendError:self.streamError];
                     break;
             }
-        };
-        checker();
-        return nil;
+           
+        }];
+        return result;
     }];
     return [result setNameWithFormat:@"[%@] -rcr_openSignal", result.name];
 }
