@@ -8,7 +8,7 @@
 //
 
 #import "ReactiveCryptor.h"
-#import "RCRTestDefinitions.h"
+#import <ReactiveXCTest/ReactiveXCTest.h>
 
 @interface NSInputStream_ReactiveCryptorTests : XCTestCase {
     NSInputStream *inputStream;
@@ -37,7 +37,7 @@
 }
 
 - (void)testReadWithBufferSize {
-	[self rcr_expectNext:^(NSData *next) {
+	[self rxct_expectNext:^(NSData *next) {
         XCTAssertNotNil(next);
         XCTAssertTrue(next.length == testData.length);
         NSString *returnedString = [[NSString alloc] initWithData:next encoding:NSUTF8StringEncoding];
@@ -55,7 +55,7 @@
         NSInputStream *thisStream = [[NSInputStream alloc] initWithData:thisData];
         [thisStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
         [thisStream open];
-        [self rcr_expectCompletionFromSignal:[[[[[thisStream rcr_readWithBufferSize:i]
+        [self rxct_expectCompletionFromSignal:[[[[[thisStream rcr_readWithBufferSize:i]
         repeat]
         doNext:^(NSData *next) {
             XCTAssertNotNil(next);
@@ -85,7 +85,7 @@
 }
 
 - (void)testReadWithSampleSignal {
-	[self rcr_expectNext:^(NSData *next) {
+	[self rxct_expectNext:^(NSData *next) {
         XCTAssertNotNil(next);
         XCTAssertTrue(next.length == testData.length);
         NSString *returnedString = [[NSString alloc] initWithData:next encoding:NSUTF8StringEncoding];
@@ -107,7 +107,7 @@
         void (^trigger)(void) = ^{
             [subject sendNext:@(i)];
         };
-        [self rcr_expectCompletionFromSignal:[[[[thisStream rcr_readWithSampleSignal:subject]
+        [self rxct_expectCompletionFromSignal:[[[[thisStream rcr_readWithSampleSignal:subject]
         doNext:^(NSData *next) {
             XCTAssertNotNil(next);
             XCTAssertTrue(next.length == expectedLength);

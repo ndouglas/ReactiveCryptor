@@ -8,7 +8,7 @@
 //
 
 #import "ReactiveCryptor.h"
-#import "RCRTestDefinitions.h"
+#import <ReactiveXCTest/ReactiveXCTest.h>
 
 @interface RNDecryptor_ReactiveCryptorTests : XCTestCase {
     NSInputStream *inputStream;

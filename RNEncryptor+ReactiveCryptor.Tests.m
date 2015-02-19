@@ -8,7 +8,7 @@
 //
 
 #import "ReactiveCryptor.h"
-#import "RCRTestDefinitions.h"
+#import <ReactiveXCTest/ReactiveXCTest.h>
 
 @interface RNEncryptor_ReactiveCryptorTests : XCTestCase
 

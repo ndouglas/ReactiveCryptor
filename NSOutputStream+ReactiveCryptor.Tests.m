@@ -7,8 +7,8 @@
 //  See LICENSE for details.
 //
 
-#import "ReactiveCouchbaseLite.h"
-#import "RCRTestDefinitions.h"
+#import "ReactiveCryptor.h"
+#import <ReactiveXCTest/ReactiveXCTest.h>
 
 @interface NSOutputStream_ReactiveCryptorTests : XCTestCase {
     NSInputStream *inputStream;
@@ -53,12 +53,12 @@
 }
 
 - (void)testWrite {
-    [self rcr_expectCompletionFromSignal:[outputStream rcr_write:testData] timeout:1.0 description:@"write completed"];
+    [self rxct_expectCompletionFromSignal:[outputStream rcr_write:testData] timeout:1.0 description:@"write completed"];
     XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
 }
 
 - (void)testProcessInputStreamBufferSize {
-    [self rcr_expectCompletionFromSignal:[outputStream rcr_processInputStream:inputStream bufferSize:36] timeout:5.0 description:@"write completed"];
+    [self rxct_expectCompletionFromSignal:[outputStream rcr_processInputStream:inputStream bufferSize:36] timeout:5.0 description:@"write completed"];
     XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
 
     NSString *thisString = [[NSUUID UUID] UUIDString];
@@ -70,7 +70,7 @@
         NSOutputStream *thisOutputStream = [[NSOutputStream alloc] initToMemory];
         [thisOutputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
         [thisOutputStream open];
-        [self rcr_expectCompletionFromSignal:[[thisOutputStream rcr_processInputStream:thisInputStream bufferSize:i]
+        [self rxct_expectCompletionFromSignal:[[thisOutputStream rcr_processInputStream:thisInputStream bufferSize:i]
         then:^RACSignal * {
             XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
             return [RACSignal empty];
@@ -85,7 +85,7 @@
 
 - (void)testProcessInputStreamSampleSignal {
     RACBehaviorSubject *subject = [RACBehaviorSubject behaviorSubjectWithDefaultValue:@(36)];
-    [self rcr_expectCompletionFromSignal:[outputStream rcr_processInputStream:inputStream sampleSignal:[subject sample:[RACSignal interval:0.1 onScheduler:[RACScheduler mainThreadScheduler]]]]
+    [self rxct_expectCompletionFromSignal:[outputStream rcr_processInputStream:inputStream sampleSignal:[subject sample:[RACSignal interval:0.1 onScheduler:[RACScheduler mainThreadScheduler]]]]
     timeout:5.0 description:@"write completed"];
     XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
 
@@ -99,7 +99,7 @@
         NSOutputStream *thisOutputStream = [[NSOutputStream alloc] initToMemory];
         [thisOutputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
         [thisOutputStream open];
-        [self rcr_expectCompletionFromSignal:[[thisOutputStream rcr_processInputStream:thisInputStream sampleSignal:[subject sample:[RACSignal interval:0.001 onScheduler:[RACScheduler mainThreadScheduler]]]]
+        [self rxct_expectCompletionFromSignal:[[thisOutputStream rcr_processInputStream:thisInputStream sampleSignal:[subject sample:[RACSignal interval:0.001 onScheduler:[RACScheduler mainThreadScheduler]]]]
         then:^RACSignal * {
             XCTAssertEqualObjects([self dataInOutputStream:outputStream], testData);
             return [RACSignal empty];

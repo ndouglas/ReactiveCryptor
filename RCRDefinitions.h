@@ -7,4 +7,5 @@
 //  See LICENSE for details.
 //
 
+#import <RNCryptor/RNCryptor.h>
 #import <ReactiveCocoa/ReactiveCocoa.h>

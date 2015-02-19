@@ -8,7 +8,7 @@
 //
 
 #import "ReactiveCryptor.h"
-#import "RCRTestDefinitions.h"
+#import <ReactiveXCTest/ReactiveXCTest.h>
 
 @interface RNCryptor_ReactiveCryptorTests : XCTestCase {
     NSInputStream *inputStream;
@@ -74,7 +74,7 @@
     } completed:^{
         NSLog(@"Encryptor completed!");
     }];
-    [self rcr_expectCondition:^BOOL {
+    [self rxct_expectCondition:^BOOL {
         return [[self dataInOutputStream:outputStreamA] length] > 0;
     } beforeTimeout:5.0 interval:0.1 description:@"data was encrypted"];
     XCTAssertEqualObjects([RNDecryptor decryptData:[self dataInOutputStream:outputStreamA] withPassword:@"password" error:NULL], testData);
@@ -99,7 +99,7 @@
     } completed:^{
         NSLog(@"Decryptor completed!");
     }];
-    [self rcr_expectCondition:^BOOL {
+    [self rxct_expectCondition:^BOOL {
         return [[self dataInOutputStream:outputStreamB] length] > 0;
     } beforeTimeout:5.0 interval:0.1 description:@"data was decrypted"];
     XCTAssertEqualObjects([[NSString alloc] initWithData:[self dataInOutputStream:outputStreamB] encoding:NSUTF8StringEncoding], testString);
@@ -124,7 +124,7 @@
     } completed:^{
         NSLog(@"Encryptor completed!");
     }];
-    [self rcr_expectCondition:^BOOL {
+    [self rxct_expectCondition:^BOOL {
         encryptedData = [self dataInOutputStream:outputStreamA];
         return encryptedData.length > 0;
     } beforeTimeout:5.0 interval:0.1 description:@"data was encrypted"];
@@ -144,7 +144,7 @@
     } completed:^{
         NSLog(@"Decryptor completed!");
     }];
-    [self rcr_expectCondition:^BOOL {
+    [self rxct_expectCondition:^BOOL {
         decryptedData = [self dataInOutputStream:outputStreamB];
         return decryptedData.length > 0;
     } beforeTimeout:5.0 interval:0.1 description:@"data was decrypted"];
@@ -166,7 +166,7 @@
     } completed:^{
         NSLog(@"Completed!");
     }];
-    [self rcr_expectCondition:^BOOL {
+    [self rxct_expectCondition:^BOOL {
         return [processedInputStream hasBytesAvailable];
     } beforeTimeout:5.0 interval:0.1 description:@"data was encrypted"];
     NSMutableData *encryptedData = [NSMutableData dataWithLength:32 * 1024];
@@ -193,7 +193,7 @@
     } completed:^{
         NSLog(@"Completed!");
     }];
-    [self rcr_expectCondition:^BOOL {
+    [self rxct_expectCondition:^BOOL {
         return bytesWritten == testData.length;
     } beforeTimeout:5.0 interval:0.1 description:@"data was decrypted"];
     NSData *outputData = [self dataInOutputStream:outputStream];

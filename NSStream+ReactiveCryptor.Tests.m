@@ -8,7 +8,7 @@
 //
 
 #import "ReactiveCryptor.h"
-#import "RCRTestDefinitions.h"
+#import <ReactiveXCTest/ReactiveXCTest.h>
 
 @interface NSStream_ReactiveCryptorTests : XCTestCase {
     NSInputStream *inputStream;
@@ -42,7 +42,7 @@
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.5 * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         [stream open];
     });
-    [self rcr_expectCompletionFromSignal:[stream rcr_openSignal] timeout:5.0 description:@"signal eventually opened"];
+    [self rxct_expectCompletionFromSignal:[stream rcr_openSignal] timeout:5.0 description:@"signal eventually opened"];
 }
 
 #undef __CLASS__
