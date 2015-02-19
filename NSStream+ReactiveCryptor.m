@@ -8,7 +8,7 @@
 //
 
 #import "NSStream+ReactiveCryptor.h"
-#import "Sync.h"
+#import "ReactiveCryptor.h"
 
 @implementation NSStream (ReactiveCryptor)
 

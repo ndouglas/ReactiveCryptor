@@ -8,7 +8,7 @@
 //
 
 #import "NSInputStream+ReactiveCryptor.h"
-#import "ReactiveCouchbaseLite.h"
+#import "ReactiveCryptor.h"
 
 @implementation NSInputStream (ReactiveCryptor)
 

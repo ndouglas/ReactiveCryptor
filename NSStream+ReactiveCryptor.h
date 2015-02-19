@@ -7,7 +7,6 @@
 //  See LICENSE for details.
 //
 
-#import <Foundation/Foundation.h>
 #import "RCRDefinitions.h"
 
 @interface NSStream (ReactiveCryptor)
